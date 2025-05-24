@@ -173,8 +173,21 @@ def update_database_list(generic, specific, company, QR_link, image):
 
     #DEAL WITH COMPANY LATER --> johnny default, but if Hudson, need that to reflect in filename
 
-def save_user_input_img(filepath, file):
+def save_feedback(str):
+    with open("static/feedback.txt", 'w') as f:
+        f.write(str)
+    with open("static/feedback.txt", 'rb') as f:
+        s3_key = f'feedback/feedback-{datetime.now(timezone.utc)}.txt'
+        presigned_url = generate_presigned_url(s3_key, 'text/plain')
+        response = requests.put(
+            presigned_url,
+            data=f,
+            headers={'Content-Type': 'text/plain'}
+        )
+        if response.status_code != 200:
+            raise Exception(f"Failed to upload text file: {response.text}")
 
+def save_user_input_img(filepath, file):
     if file:
         filename = secure_filename(filepath)
         s3_key = f'icons/{filename}'

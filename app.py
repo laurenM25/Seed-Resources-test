@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from waitress import serve
 from functions import names_and_photos, get_QR_filename, get_photo_filename, list_of_seeds, list_of_generics, list_of_companies
-from functions import update_database_list, save_user_input_img, BUCKET_NAME
+from functions import update_database_list, save_user_input_img, save_feedback, BUCKET_NAME
 
 app = Flask(__name__)
 
@@ -74,6 +74,16 @@ def confirm_entry_page():
 
     #render template
     return render_template('confirm-new-entry.html',seed_name=seed_name)
+
+@app.route('/give-feedback')
+def give_feedback():
+    return render_template('give-feedback.html')
+
+@app.route('/confirm-feedback')
+def confirm_feedback():
+    feedback = request.args.get('feedback')
+    save_feedback(feedback)
+    return render_template('confirm-feedback.html')
 
 if __name__ == '__main__':
     app.run(host = "0.0.0.0", port = 8000)
