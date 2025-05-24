@@ -36,7 +36,8 @@ def generate_presigned_url(key, content_type, expiration=3600): #use presigned u
             'Key': key,
             'ContentType': content_type
         },
-        ExpiresIn=expiration
+        ExpiresIn=expiration,
+        HttpMethod='PUT'
     )
 
 def names_and_photos(matches):
@@ -90,7 +91,7 @@ def create_qr_code(data, filename):
     #debugging, show url
     print(f"Presigned URL: {presigned_url}")
     print({'Content-Type': 'image/png'})
-    
+
     # Upload via HTTP PUT
     response = requests.put(
         presigned_url,
