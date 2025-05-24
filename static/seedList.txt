@@ -1,0 +1,44 @@
+cauliflower: fujiyama
+fennel: fino
+bell pepper: ace
+swiss chard: bright lights
+hyssop: anise
+shallot: innovator
+parsley: giant of italy
+turnip: hakurei
+carrot: dragon
+basil: 
+eggplant: petch siam
+lettuce: purple fusion
+tomatillo: toma verde
+radish: purple heart
+beet: chioggia guardsmark
+squash: patty pan, yellow summer
+dill: teddy
+marigold: tangerine gem
+soybean: chiba green
+spinach: seaside
+corn: montana morado, miniature colored popcorn
+nasturtium: empress of india
+bean: python
+cover crop:fall, yellow mustard
+snap peas: royal snap ii
+nigella: delft blue
+brocolli: green magic
+chamomile: german
+black-eyed susan: triloba
+sunflower: autumn beauty, teddy bear, royal
+sweet marjoram:common
+cucumber: striped armenian
+tomato: black cherry
+amaranth: 
+kale: black magic
+lemon balm: 
+salvia: oxford blue
+shiso: red
+bok choy: shikibu
+brussel sprouts: silvia
+argula: standard
+matricaria: tetra white
+cosmos: versailles red
+snow peas: royal

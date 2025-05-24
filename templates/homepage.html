@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Organizing Materials for School Gardens</title>
+    <link href="{{ url_for('static', filename='styles/general.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='styles/homepage.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="page-heading">
+        GrowNYC School Gardens references
+    </div>
+    <div class="rows">
+        <div class="page-row">
+            <div class="page-column">
+                <div class="column-heading">Seed Distribution</div>
+                <form action="seed-info-page">
+                    <input class="search-bar" list="seed-type" name="seed-type" placeholder="Search a seed">
+                    <datalist id="seed-type">
+                        {% for seed in seeds %}
+                        <option value='{{seed}}'></option>
+                        {%endfor%}
+                    </datalist>
+                </form><br>
+                <div>Can't find what you need? <a href="/add-seed">Add a seed.</a></div>
+            </div>
+            <div class="page-column">
+                <div class="column-heading">Guides</div>
+                <div><a href="https://docs.google.com/document/d/1yAuVVrQUOgCDJTch3IgE2xbegQUQoEETelGP7g52OVQ/edit?usp=sharing"
+                        target="_blank">Using Avery Label Customizer</a></div>
+                <div><a href="https://docs.google.com/document/d/1WykQn5TFhn8qZ6wwO85YQI4-GeQIYYwoojo4sS7r3Fo/edit?usp=sharing"
+                        target="_blank">How-To: Lasso tool and graphic design</a></div>
+                <div><a href="https://docs.google.com/document/d/1A2nltuJjHnyNAwwhpbhJgV7Sl9pR0ur6-kVE4q31xx8/edit?usp=sharing"
+                        target="_blank">Seed packing: Tips and tricks</a></div>
+            </div>
+        </div>
+        <div class="page-row">
+            <div class="page-column">
+                <div class="column-heading">Quick create pdf</div>
+                <div class="pdf-options-box">
+                    <form action="/pdf-viewer?variety={{match}}" method="get">
+                        <!-- Seed variety -->
+                        <input class="search-bar" list="variety" name="variety" placeholder="Search a seed">
+                        <datalist id="variety">
+                            {% for seed in seeds %}
+                            <option value='{{seed}}'></option>
+                            {%endfor%}
+                        </datalist>
+                        <!-- Seed company -->
+                        <br><label>Seed company:</label>
+                        <input class="search-bar" type="textbox" list="company" placeholder="choose company"
+                            name="company">
+                        <datalist id="company">
+                            {% for company in companies %}
+                            <option value='{{company}}'></option>
+                            {%endfor%}
+                        </datalist>
+                        <br>
+                        <!-- Sow date -->
+                        <br><label for="month">Sow date</label><br>
+                        <select id="month" name="month">
+                            <option value="Jan.">January</option>
+                            <option value="Feb.">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="Aug.">August</option>
+                            <option value="Sept.">September</option>
+                            <option value="Oct.">October</option>
+                            <option value="Nov.">November</option>
+                            <option value="Dec.">December</option>
+                        </select>
+                        <input class="year-box" type="text" id="year" name="year" placeholder="YYYY">
+                        <br>
+                        <!-- Generate pdf button -->
+                        <button>generate pdf</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="page-row">
+            <div class="page-column">
+                <div class="column-heading">Give Feedback</div>
+                <form action="give-feedback">
+                    <button class="return-home-button">Give Feedback on Website</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="Lauren-contact">
+        <div>created by <a href="https://laurenm25.github.io/lauren-donnelly/" target="_blank">Lauren Donnelly</a></div>
+    </div>
+    </div>
+</body>

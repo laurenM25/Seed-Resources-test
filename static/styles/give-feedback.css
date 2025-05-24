@@ -1,0 +1,12 @@
+body {
+    background-color: antiquewhite;
+    color: black;
+}
+
+.page-heading {
+    background-color: rgb(221, 209, 194);
+}
+
+div {
+    margin-bottom: 20px;
+}

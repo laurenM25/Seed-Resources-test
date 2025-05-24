@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Error: {{error}}</title>
+    <link href="{{ url_for('static', filename='styles/general.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='styles/error.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="page-heading">{{error}}</div>
+    <div>{{expl}}</div>
+    <div>
+        <form action="homepage">
+            <button class="return-home-button">Return Home</button>
+        </form>
+    </div>
+</body>

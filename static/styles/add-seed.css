@@ -1,0 +1,21 @@
+.page-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+body {
+    display: grid;
+    grid-template-rows: 100px 100px 200px 100px;
+}
+
+.warning-note {
+    background-color: rgb(4, 71, 4);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+div {
+    display: inline;
+}

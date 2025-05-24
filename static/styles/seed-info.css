@@ -1,0 +1,32 @@
+.little-photo {
+    width: 200px;
+}
+
+.match-title {
+    background-color: rgb(15, 15, 168);
+    display: block;
+}
+
+.pdf-options-box {
+    display: grid;
+    grid-template-rows: 20px 60px 60px 60px;
+}
+
+.square-seed-preview {
+    display: grid;
+    grid-template-columns: 215px 215px 215px 300px;
+    margin-bottom: 40px;
+}
+
+.year-box {
+    width: 40px;
+}
+
+button {
+    background-color: blueviolet;
+    color: white;
+}
+
+label {
+    font-size: 16px;
+}

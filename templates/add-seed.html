@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Add seed</title>
+    <link href="{{url_for('static', filename='styles/general.css')}}" rel="stylesheet" />
+    <link href="{{url_for('static', filename='styles/add-seed.css')}}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="page-heading">
+        Add a seed to the database.
+    </div>
+
+    <div class="page-row">
+        <div>
+            Want to add another seed to the database? Check that it's not already in there:
+        </div>
+        <div>
+            <input class="search-bar" list="seed-type" name="seed-type" placeholder="Search a seed">
+            <datalist id="seed-type">
+                {% for seed in seeds %}
+                <option value='{{seed}}'></option>
+                {%endfor%}
+            </datalist>
+        </div>
+    </div>
+
+    <div class="page-row">
+        <form action="confirm-new-entry" method="post" enctype="multipart/form-data">
+            <!--Generic input-->
+            <label>Add seed variety:</label>
+            <input class="search-bar" list="generic-seed" placeholder="generic name" name="generic-seed">
+            <datalist id="generic-seed">
+                {% for generic in generics %}
+                <option value='{{generic}}'></option>
+                {%endfor%}
+            </datalist>
+            <br>
+
+            <!--specific variety input-->
+            <label>Add specific variety:</label>
+            <input class="search-bar" type="textbox" id="specific-seed" placeholder="specific variety"
+                name="specific-seed">
+            <br>
+
+            <!--seed company input-->
+            <label>Seed company (default is Johnny's Seeds):</label>
+            <input class="search-bar" type="textbox" list="company" placeholder="choose company" name="company">
+            <datalist id="company">
+                {% for company in companies %}
+                <option value='{{company}}'></option>
+                {%endfor%}
+            </datalist>
+            <br>
+
+            <!--link input-->
+            <label>Add link to seed variety info:</label>
+            <input class="search-bar" type="textbox" id="QR-link" placeholder="link to webpage" name="QR-link">
+            <br>
+
+            <!--image input-->
+            <label>Add plant photo (jpg):</label>
+            <input type="file" id="fileUpload" name="fileUpload">
+            <input type="submit" value="Submit">
+            <br>
+
+        </form>
+    </div>
+
+    <div class="warning-note">
+        Note: Inputting a duplicate seed variety will overwrite previous versions, so check that the specific seed
+        variety you're interested in is not already in the database <br> (otherwise, what you submit will become the new
+        version).
+    </div>
+
+    <div class="page-row">
+        <form action="homepage">
+            <button class="return-home-button">Return Home</button>
+        </form>
+    </div>
+
+</body>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Give Feedback</title>
+    <link href="{{ url_for('static', filename='styles/general.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='styles/give-feedback.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="page-heading">Give Feedback</div>
+    <div>What would you like to see? More customization for the pdf sheet? Varieties of plants from other
+        companies? The
+        ability to change the font size or add a QR photo instead of the plant photo? User input for images and plant
+        names? Let me know, and I will prioritize whatever features are most desirable.</div>
+    <div>
+        <form action="/confirm-feedback" method="get">
+            <textarea id="feedback" name="feedback" rows="6" cols="80"></textarea>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <div>
+        <form action="homepage">
+            <button class="return-home-button">Return Home</button>
+        </form>
+    </div>
+</body>

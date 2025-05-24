@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Download pdf: {{seed}}</title>
+    <link href="{{url_for('static', filename='styles/general.css')}}" rel="stylesheet" />
+    <link href="{{url_for('static', filename='styles/pdf-viewer.css')}}" rel="stylesheet" />
+</head>
+
+<body>
+    {% for r in range(rows) %}
+    <div class="row">
+        {% for c in range(columns) %}
+        <div class="column">
+            <div>
+                <img src="{{ picture_url }}">
+            </div>
+            <div>
+                <p class="variety-title">{{variety}}</p>
+                <p class="company-title">{{company}}</p>
+                <p class="date-title">{{date}}</p>
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+    {%endfor%}
+
+</body>

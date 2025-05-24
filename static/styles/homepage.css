@@ -1,0 +1,25 @@
+.column-heading {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+.rows {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.page-column {
+    background-color: rgb(6, 6, 76);
+    border-width: 5px;
+    border-style: solid;
+    border-color: white;
+    border-radius: 12px;
+    padding-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+}
+
+a {
+    color: white;
+}
