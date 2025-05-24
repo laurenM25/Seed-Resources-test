@@ -5,10 +5,6 @@ import qrcode
 import os
 from datetime import datetime, timezone, timedelta
 import requests
-import logging
-
-#boto3 debug logging
-boto3.set_stream_logger('boto3.resources', logging.DEBUG)
 
 #checking time drift - DEBUGGING
 # Local server time
@@ -90,7 +86,11 @@ def create_qr_code(data, filename):
 
     s3_key = f'icons/{filename}'
     presigned_url = generate_presigned_url(s3_key, 'image/png')
-
+ 
+    #debugging, show url
+    print(f"Presigned URL: {presigned_url}")
+    print({'Content-Type': 'image/png'})
+    
     # Upload via HTTP PUT
     response = requests.put(
         presigned_url,
