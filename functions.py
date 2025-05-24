@@ -5,6 +5,10 @@ import qrcode
 import os
 from datetime import datetime, timezone, timedelta
 import requests
+import logging
+
+#boto3 debug logging
+boto3.set_stream_logger('boto3.resources', logging.DEBUG)
 
 #checking time drift - DEBUGGING
 # Local server time
