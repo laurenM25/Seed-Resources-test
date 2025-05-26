@@ -14,6 +14,7 @@ MarkupSafe==3.0.2
 packaging==25.0
 pillow==11.2.1
 python-dateutil==2.9.0.post0
+python-dotenv==1.1.0
 qrcode==8.2
 requests==2.32.3
 s3transfer==0.13.0
