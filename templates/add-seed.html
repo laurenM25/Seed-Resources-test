@@ -56,6 +56,9 @@
             <!--link input-->
             <label>Add link to seed variety info:</label>
             <input class="search-bar" type="textbox" id="QR-link" placeholder="link to webpage" name="QR-link">
+            <label class="check-box">
+                <input type="checkbox" id="no-qr-link" name="no-qr-link"> Exclude link
+            </label>
             <br>
 
             <!--image input-->
@@ -77,6 +80,13 @@
                 method: 'POST',
                 body: formData
             });
+
+            const data = await uploadResponse.json();
+            if ('error' in data) {
+                alert(JSON.stringify(data.error))
+            } else {
+                document.body.innerHTML = data.html
+            }
         };
     </script>
 

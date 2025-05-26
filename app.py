@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from waitress import serve
-from functions import names_and_photos, get_QR_filename, get_photo_filename, list_of_seeds, list_of_generics, list_of_companies
-from functions import update_database_list, save_user_input_img, save_feedback, BUCKET_NAME, ensure_valid_file_name
+from functions import names_and_photos, get_photo_filename, list_of_seeds, list_of_generics, list_of_companies, create_qr_code
+from functions import save_feedback, BUCKET_NAME, ensure_valid_file_name
 import requests
 import os
 from dotenv import load_dotenv
@@ -80,13 +80,17 @@ def confirm_entry_page():
     generic_seed = request.form.get('generic-seed').lower()
     specific_seed = request.form.get('specific-seed').lower()
     company = request.form.get('company').title()
+    exclude_QR = request.form.get('no-qr-link') 
     QR_link = request.form.get('QR-link')
 
     #confirm no blank inputs
-    inputs = [generic_seed,specific_seed,company,QR_link]
+    inputs = [generic_seed,specific_seed,company]
     if any(len(ele)==0 for ele in inputs):
         expl="Missing an input. Make sure to fill out all areas on the form."
-        return render_template('error.html', error="Missing value", expl=expl)
+        return jsonify({'html': render_template('error.html', error="Missing value", expl=expl)})
+    
+    if not exclude_QR and len(QR_link) == 0:
+        return jsonify({'error': 'Please either provide a QR link or check "Exclude link."'})
     
     # Secure the filename
     if user_file:
@@ -95,15 +99,44 @@ def confirm_entry_page():
         file_name, file_path = ensure_valid_file_name(file_name,file_ext=ext,filepath="seed_imgs") 
         # Save file locally
         user_file.save(file_name)
-
-        upload_file_bucket(file_name,'new-bucket-2341',file_path)
-        #QR code do this later
-        QR_file = requests.get(QR_link)
+    else:
+        return jsonify({'error': 'The file provided was empty or invalid."'})
+    
+    if not exclude_QR: #link and QR
+        try:
+            QR_file = requests.get(QR_link)
+        except:
+            return jsonify({'error': 'Invalid url. Please submit a valid url.'})
+        file_name_QR = file_name.replace(f".{ext}", "") + "-QR" + f".{ext}"
+        #create and save QR code
+        createQR = create_qr_code(QR_link,file_name_QR)
+        if createQR == Exception:
+            return jsonify({'error': 'QR code was unable to be created.'})
+        
+        upload_file_bucket(file_name_QR,"new-bucket-2341",filepath=f"seed_qrs/{file_name_QR}")
    
+    #upload plant image now that I know QR file is valid
+    upload_file_bucket(file_name,'new-bucket-2341',file_path)
+
+    #remove files locally
+    try:
+        os.remove(file_name)
+        os.remove(file_name_QR)
+    except FileNotFoundError:
+        print("The QR or plant image file was not found, so could not delete.")
+    except PermissionError:
+        print("Error: Permission denied to delete QR or plant image file.")
+    except OSError as e:
+        print(f"Error: An unexpected error occurred: {e}.")
+    
     seed_name = (specific_seed + " " + generic_seed).title()
 
     #render template
-    return render_template('confirm-new-entry.html',seed_name=seed_name)
+    rendered_html = render_template('confirm-new-entry.html', seed_name=seed_name)
+    return jsonify({
+        'html': rendered_html,
+        'seed_name': seed_name
+    })
 
 @app.route('/give-feedback')
 def give_feedback():

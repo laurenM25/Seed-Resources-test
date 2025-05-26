@@ -7,6 +7,8 @@ from datetime import datetime, timezone, timedelta
 import requests
 from urllib.parse import urlparse
 import re
+from dotenv import load_dotenv
+from botocore.exceptions import ClientError
 
 #checking time drift - DEBUGGING
 # Local server time
@@ -16,48 +18,25 @@ print("Local UTC:", datetime.now(timezone.utc))
 response = requests.head('https://s3.amazonaws.com')
 print("AWS Server time:", response.headers['Date'])
 
+load_dotenv()
 
-# Initialize boto3 S3 client (for remote storage of photos)
-session = boto3.session.Session(
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.getenv("AWS_DEFAULT_REGION")
-)
+aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+BUCKET_NAME = "new-bucket-2341"
 
-#check if properly fetched on Render
-print(session.get_credentials().get_frozen_credentials())
-
-s3 = session.client('s3')
-BUCKET_NAME = 'grownyc-app-assets'
-
-def generate_presigned_url(key, content_type, expiration=3600): #use presigned url 
-    return s3.generate_presigned_url(
-        'put_object',
-        Params={
-            'Bucket': BUCKET_NAME,
-            'Key': key,
-            'ContentType': content_type
-        },
-        ExpiresIn=expiration,
-        HttpMethod='PUT'
-    )
+s3 = boto3.client(service_name = 's3', region_name="us-east-1", aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
 def names_and_photos(matches):
     my_dict = {}
 
-    base = f"https://{BUCKET_NAME}.s3.us-east-1.amazonaws.com/icons/"
+    base = f"https://{BUCKET_NAME}.s3.us-east-1.amazonaws.com/"
     for match in matches:
         key = match.strip().replace(" ", "-")
         my_dict[match] = [
-        base + key + "-QR.png",
-        base + key + ".jpg"
+        base + "seed_qrs/" + key + "-QR.jpg",
+        base + "seed_imgs/" + key + ".jpg"
         ]
-    
     return my_dict
-
-def get_QR_filename(variety_name): #input a string, output a string
-    variety_name = variety_name.strip().lower()
-    return variety_name.replace(" ", "-") + "-QR.png"
 
 def create_qr_code(data, filename):
     if not data.startswith("http://") and not data.startswith("https://"):
@@ -76,38 +55,11 @@ def create_qr_code(data, filename):
 
     # Create an image from the QR code instance
     img = qr.make_image(fill_color="black", back_color="white")
-
-    # Make sure the directory exists
-    save_path = os.path.join('static', 'icons')
-    os.makedirs(save_path, exist_ok=True)
-
-    #save to AWS
-    from io import BytesIO
-    buf = BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-
-    s3_key = f'icons/{filename}'
-    presigned_url = generate_presigned_url(s3_key, 'image/png')
- 
-    #debugging, show url
-    print(f"Presigned URL: {presigned_url}")
-    print({'Content-Type': 'image/png'})
-
-    # Upload via HTTP PUT
-    response = requests.put(
-        presigned_url,
-        data=buf,
-        headers={'Content-Type': 'image/png'}
-    )
-
-    print("Response status:", response.status_code)
-    print("Response content:", response.content)
-
-    if response.status_code != 200:
-        raise Exception(f"Failed to upload QR code: {response.text}")
-
-    return f"https://{BUCKET_NAME}.s3.us-east-1.amazonaws.com/icons/{filename}"
+    try:
+        img.save(filename)
+    except Exception as e:
+        print(f"in functions file: unable to save the QR image: {e}")
+        return Exception
 
 def get_photo_filename(variety_name):
     variety_name = variety_name.strip().lower()
@@ -144,6 +96,8 @@ def list_of_companies():
 
     return companies
 
+#update text list, or maybe redo app.py so it implements something like this:
+"""
 def update_database_list(generic, specific, company, QR_link, image): 
     name = specific + " " + generic
     image_name = get_photo_filename(name)
@@ -182,36 +136,22 @@ def update_database_list(generic, specific, company, QR_link, image):
         upload_txt_to_s3('static/seedList.txt')
 
     #DEAL WITH COMPANY LATER --> johnny default, but if Hudson, need that to reflect in filename
+"""
 
-def save_feedback(str):
+def save_feedback(str,file_name="static/feedback.txt"):
     with open("static/feedback.txt", 'w') as f:
         f.write(str)
-    with open("static/feedback.txt", 'rb') as f:
-        s3_key = f'feedback/feedback-{datetime.now(timezone.utc)}.txt'
-        presigned_url = generate_presigned_url(s3_key, 'text/plain')
-        response = requests.put(
-            presigned_url,
-            data=f,
-            headers={'Content-Type': 'text/plain'}
-        )
-        if response.status_code != 200:
-            raise Exception(f"Failed to upload text file: {response.text}")
+    
+    file_path = f'feedback/feedback-{datetime.now(timezone.utc)}.txt'
+    try:
+        response = s3.upload_file(file_name,BUCKET_NAME,file_path)
+    except ClientError as e:
+        print("error uploading")
+        return ClientError
 
-def save_user_input_img(filepath, file):
-    if file:
-        filename = secure_filename(filepath)
-        s3_key = f'icons/{filename}'
-        presigned_url = generate_presigned_url(s3_key, file.content_type)
-        response = requests.put(
-            presigned_url,
-            data=file,
-            headers={'Content-Type': file.content_type}
-        )
-        if response.status_code != 200:
-            raise Exception(f"Failed to upload image: {response.text}")
-        return f"https://{BUCKET_NAME}.s3.us-east-1.amazonaws.com/icons/{filename}"
-    return None
 
+#also not in use right now
+"""
 def upload_txt_to_s3(local_path): #update txt file in S3 bucket
     with open(local_path, 'rb') as f:
         s3_key = 'seedList.txt'
@@ -223,6 +163,8 @@ def upload_txt_to_s3(local_path): #update txt file in S3 bucket
         )
         if response.status_code != 200:
             raise Exception(f"Failed to upload text file: {response.text}")
+"""
+
 
 def ensure_valid_file_name(file_name, url=None, file_ext=None, filepath=None):
     file_name = file_name.replace(" ", "-")
@@ -231,7 +173,10 @@ def ensure_valid_file_name(file_name, url=None, file_ext=None, filepath=None):
     if url:
         file_extension = os.path.splitext(urlparse(url).path)[1]
     if file_ext:
-        file_extension = "." + file_ext
+        if "." not in file_ext:
+            file_extension = "." + file_ext
+        else:
+            file_extension = file_ext
     
     if len(file_name.split(".")) == 1:
         file_name += file_extension

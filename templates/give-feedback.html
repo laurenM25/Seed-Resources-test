@@ -13,11 +13,20 @@
         ability to change the font size or add a QR photo instead of the plant photo? User input for images and plant
         names? Let me know, and I will prioritize whatever features are most desirable.</div>
     <div>
-        <form action="/confirm-feedback" method="get">
+        <form id="uploadForm" action="/confirm-feedback" method="get">
             <textarea id="feedback" name="feedback" rows="6" cols="80"></textarea>
             <input type="submit" value="Submit">
         </form>
     </div>
+    <script>
+        document.getElementById("uploadForm").onsubmit = async function (e) {
+            e.preventDefault();
+            const submission = document.getElementById("feedback").value
+            if (!submission) return alert("Empty submission: Please add feedback.")
+
+            const formData = new FormData(this);
+        }
+    </script>
     <div>
         <form action="homepage">
             <button class="return-home-button">Return Home</button>

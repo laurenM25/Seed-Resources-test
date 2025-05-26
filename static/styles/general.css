@@ -33,6 +33,13 @@ body {
 
 button {
     border-radius: 5px;
+    background-color: rgb(252, 190, 223);
+}
+
+.check-box {
+    font-size: 16px;
+    padding-left: 2px;
+    color: rgb(215, 152, 152);
 }
 
 select:hover,
