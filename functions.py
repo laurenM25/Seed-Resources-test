@@ -5,6 +5,8 @@ import qrcode
 import os
 from datetime import datetime, timezone, timedelta
 import requests
+from urllib.parse import urlparse
+import re
 
 #checking time drift - DEBUGGING
 # Local server time
@@ -98,6 +100,9 @@ def create_qr_code(data, filename):
         data=buf,
         headers={'Content-Type': 'image/png'}
     )
+
+    print("Response status:", response.status_code)
+    print("Response content:", response.content)
 
     if response.status_code != 200:
         raise Exception(f"Failed to upload QR code: {response.text}")
@@ -218,3 +223,29 @@ def upload_txt_to_s3(local_path): #update txt file in S3 bucket
         )
         if response.status_code != 200:
             raise Exception(f"Failed to upload text file: {response.text}")
+
+def ensure_valid_file_name(file_name, url=None, file_ext=None, filepath=None):
+    file_name = file_name.replace(" ", "-")
+    file_name = re.sub(r'[<>:"/\\|?*]', '', file_name)
+
+    if url:
+        file_extension = os.path.splitext(urlparse(url).path)[1]
+    if file_ext:
+        file_extension = "." + file_ext
+    
+    if len(file_name.split(".")) == 1:
+        file_name += file_extension
+    elif len(file_name.split(".")) == 2:
+        #check if correct ending
+        if file_name.split(".")[1] != file_extension.strip("."):
+            file_name = file_name.split(".")[0] + file_extension
+    else:
+        file_name = file_name.replace(file_extension,"").replace(".","-") + file_extension
+
+    if filepath: #ensure valid filepath leading up to where filename should be stored
+        filepath = re.sub(r'[<>:"\\|?*]', '', filepath)
+        if filepath[-1] == "/":
+            filepath = filepath[:-1]
+        filepath = filepath + "/" + file_name
+
+    return file_name,filepath

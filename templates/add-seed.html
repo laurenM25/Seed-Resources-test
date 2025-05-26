@@ -26,7 +26,7 @@
     </div>
 
     <div class="page-row">
-        <form action="confirm-new-entry" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" action="confirm-new-entry" method="POST" enctype="multipart/form-data">
             <!--Generic input-->
             <label>Add seed variety:</label>
             <input class="search-bar" list="generic-seed" placeholder="generic name" name="generic-seed">
@@ -66,6 +66,19 @@
 
         </form>
     </div>
+
+    <script>
+        document.getElementById("uploadForm").onsubmit = async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            const uploadResponse = await fetch('/confirm-new-entry', {
+                method: 'POST',
+                body: formData
+            });
+        };
+    </script>
 
     <div class="warning-note">
         Note: Inputting a duplicate seed variety will overwrite previous versions, so check that the specific seed

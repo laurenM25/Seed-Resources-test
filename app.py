@@ -1,9 +1,32 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from waitress import serve
 from functions import names_and_photos, get_QR_filename, get_photo_filename, list_of_seeds, list_of_generics, list_of_companies
-from functions import update_database_list, save_user_input_img, save_feedback, BUCKET_NAME
+from functions import update_database_list, save_user_input_img, save_feedback, BUCKET_NAME, ensure_valid_file_name
+import requests
+import os
+from dotenv import load_dotenv
+import boto3
+from botocore.exceptions import ClientError
 
 app = Flask(__name__)
+load_dotenv()
+
+aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+s3 = boto3.client(service_name = 's3', region_name="us-east-1", aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+print(aws_access_key_id)
+
+def upload_file_bucket(file_name,bucket="new-bucket-2341",filepath=None):
+    if filepath is None:
+        filepath = file_name
+    try:
+        response = s3.upload_file(file_name,bucket,filepath)
+    except ClientError as e:
+        print("error uploading")
+        return jsonify({'error': 'error uploading'})
+    print("successful uploading")
+    return jsonify({'success': 'successfully uploaded'})
 
 @app.route('/')
 @app.route('/homepage')
@@ -50,7 +73,10 @@ def add_seed_page():
 
 @app.route('/confirm-new-entry', methods=['POST'])
 def confirm_entry_page():
-    #get info
+    if 'fileUpload' not in request.files:
+        return 'No file part in the request', 400
+
+    user_file = request.files['fileUpload']
     generic_seed = request.form.get('generic-seed').lower()
     specific_seed = request.form.get('specific-seed').lower()
     company = request.form.get('company').title()
@@ -61,15 +87,19 @@ def confirm_entry_page():
     if any(len(ele)==0 for ele in inputs):
         expl="Missing an input. Make sure to fill out all areas on the form."
         return render_template('error.html', error="Missing value", expl=expl)
+    
+    # Secure the filename
+    if user_file:
+        ext = user_file.filename.rsplit('.', 1)[1].lower()
+        file_name = specific_seed + " " + generic_seed
+        file_name, file_path = ensure_valid_file_name(file_name,file_ext=ext,filepath="seed_imgs") 
+        # Save file locally
+        user_file.save(file_name)
 
-    plant_image = request.files['fileUpload']
-
-    #add entry to database
-    update = update_database_list(generic_seed,specific_seed,company,QR_link,plant_image)
-    if isinstance(update,str):
-        expl = "An error occured when updating the database list with the image. System error."
-        return render_template('error.html', error=update, expl=expl)
-
+        upload_file_bucket(file_name,'new-bucket-2341',file_path)
+        #QR code do this later
+        QR_file = requests.get(QR_link)
+   
     seed_name = (specific_seed + " " + generic_seed).title()
 
     #render template
