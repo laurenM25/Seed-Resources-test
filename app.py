@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from waitress import serve
 from functions import names_and_photos, get_photo_filename, list_of_seeds, list_of_generics, list_of_companies, create_qr_code
-from functions import save_feedback, BUCKET_NAME, ensure_valid_file_name
+from functions import save_feedback, BUCKET_NAME, ensure_valid_file_name, update_seed_list, delete_file
 import requests
 import os
 from dotenv import load_dotenv
@@ -126,16 +126,12 @@ def confirm_entry_page():
     #upload plant image now that I know QR file is valid
     upload_file_bucket(file_name,'new-bucket-2341',file_path)
 
+    #update text file
+    update_seed_list(generic_seed, specific_seed, company, QR_link)
+
     #remove files locally
-    try:
-        os.remove(file_name)
-        os.remove(file_name_QR)
-    except FileNotFoundError:
-        print("The QR or plant image file was not found, so could not delete.")
-    except PermissionError:
-        print("Error: Permission denied to delete QR or plant image file.")
-    except OSError as e:
-        print(f"Error: An unexpected error occurred: {e}.")
+    delete_file(file_name)
+    delete_file(file_name_QR)
     
     seed_name = (specific_seed + " " + generic_seed).title()
 

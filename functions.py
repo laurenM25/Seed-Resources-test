@@ -98,46 +98,41 @@ def list_of_companies():
     return companies
 
 #update text list, or maybe redo app.py so it implements something like this:
-"""
-def update_database_list(generic, specific, company, QR_link, image): 
-    name = specific + " " + generic
-    image_name = get_photo_filename(name)
-    QR_name = get_QR_filename(name)
+def update_seed_list(generic, specific, company, QR_link): 
+    response = s3.get_object(Bucket=BUCKET_NAME, Key="seedList.txt")
+    content = response['Body'].read().decode('utf-8')
+    lines = content.strip().split("\n")
 
-    #create QR 
-    create_qr_code(QR_link,QR_name)
+    matching_line = next((line for line in lines if line.split(":")[0].strip().lower() == generic.lower()), None)
 
-    save = save_user_input_img(image_name,image)
-
-    #now save name to file
-    with open('static/seedList.txt', 'r+') as file:
-        lines = file.readlines()  # Read all lines from the file
-
-        matching_line = next((line for line in lines if line.split(":")[0].strip().lower() == generic.lower()), None)
-
-        if matching_line:
-            parts = matching_line.strip().split(":")
-            varieties = parts[1].strip()
-            # If the specific variety isn't already in the list, append it
-            if specific.lower() not in varieties.lower():
-                if len(varieties) > 1:
-                    parts[1] = varieties + ", " + specific
-                else:
-                    parts[1] = specific
-                # Update the line in the list
-                updated_line = ":".join(parts) + "\n"
-                lines[lines.index(matching_line)] = updated_line
-        else:
-            #  no matching line is found --> create a new line and append it
-            lines.append(f"{generic}: {specific}\n")
-        
-        #update file with new lines
-        file.seek(0)  # cursor moves back to the start of the file
-        file.writelines(lines)  #add modified content back
-        upload_txt_to_s3('static/seedList.txt')
+    if matching_line:
+        parts = matching_line.strip().split(":")
+        varieties = parts[1].strip()
+        # If the specific variety isn't already in the list, append it
+        if f"{specific} {generic}".lower() not in varieties.lower():
+            if len(varieties) >= 1:
+                parts[1] = varieties + f", {specific} {generic}"
+            else:
+                parts[1] = specific
+            # Update the line in the list
+            updated_line = ":".join(parts) + "\n"
+            lines[lines.index(matching_line)] = updated_line
+    else:
+        #  no matching line is found --> create a new line and append it
+        lines.append(f"{generic}: {specific}\n")
+    
+    #create and upload file
+    with open("static/seedList.txt", 'w') as f:
+        f.write("\n".join(lines) + "\n")
+    
+    file_path = f'seedList.txt'
+    try:
+        response = s3.upload_file("static/seedList.txt",BUCKET_NAME,file_path)
+    except ClientError as e:
+        print("error uploading")
+        return e
 
     #DEAL WITH COMPANY LATER --> johnny default, but if Hudson, need that to reflect in filename
-"""
 
 def save_feedback(str,file_name="static/feedback.txt"):
     with open("static/feedback.txt", 'w') as f:
@@ -195,3 +190,14 @@ def ensure_valid_file_name(file_name, url=None, file_ext=None, filepath=None):
         filepath = filepath + "/" + file_name
 
     return file_name,filepath
+
+
+def delete_file(file_name):
+    try:
+        os.remove(file_name)
+    except FileNotFoundError:
+        print("The QR or plant image file was not found, so could not delete.")
+    except PermissionError:
+        print("Error: Permission denied to delete QR or plant image file.")
+    except OSError as e:
+        print(f"Error: An unexpected error occurred: {e}.")
