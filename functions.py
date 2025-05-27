@@ -61,26 +61,27 @@ def create_qr_code(data, filename):
         print(f"in functions file: unable to save the QR image: {e}")
         return Exception
 
-def get_photo_filename(variety_name):
+def get_photo_filename(variety_name,isQR = False):
     variety_name = variety_name.strip().lower()
+    if isQR:
+        return variety_name.replace(" ", "-") + "-QR.jpg" 
     return variety_name.replace(" ", "-") + ".jpg"
 
 def list_of_seeds(): #for the drop-down list on homepage
     seeds = []
+    response = s3.get_object(Bucket=BUCKET_NAME, Key="seedList.txt")
+    content = response['Body'].read().decode('utf-8')
+    
+    seed_list = []
+    lines = content.strip().split("\n")
+    for line in lines:
+        if ":" in line:
+            generic, specifics = line.split(":")
+            specifics_list = [s.strip() for s in specifics.split(",")]
+            for specific in specifics_list:
+                seed_list.append(specific)
 
-    with open('static/seedList.txt', 'r') as file:
-        for line in file:
-            if len(line.split(":")) > 1:
-                varieties = line.split(":")[1]
-                varieties = varieties.split(",")
-
-                for variety in varieties:
-                    item = variety.strip() + " " + line.split(":")[0]
-                    seeds.append(item)
-            else:
-                seeds.append(line)
-
-    return seeds
+    return seed_list
 
 def list_of_generics():
     seeds = []

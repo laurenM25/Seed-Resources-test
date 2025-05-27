@@ -36,31 +36,39 @@ def index():
 @app.route('/seed-info-page')
 def seed_info_page():
     seed_type = request.args.get('seed-type').lower()
+    print(f"Fetching info for seed type: {seed_type}")
 
     matches = []
-    file_names = []
-    with open('static/seedList.txt', 'r') as file:
-        for line in file:
-            if line.split(":")[0] in seed_type:
-                if len(line.split(":")) > 1:
-                    varieties = line.split(":")[1]
-                    varieties = varieties.split(",")
+    response = s3.get_object(Bucket=BUCKET_NAME, Key="seedList.txt")
+    content = response['Body'].read().decode('utf-8')
+    lines = content.strip().split("\n")
+    
+    for line in lines:
+        parts = line.split(":")
+        if len(parts) < 2:
+            continue
+        generic_name = parts[0].strip().lower()
+        if generic_name in seed_type:
+            varieties = parts[1].split(",")
+            for variety in varieties:
+                matches.append(variety.strip().lower())  # full name
 
-                    for variety in varieties:
-                        item = variety.strip() + " " + line.split(":")[0].strip()
-                        matches.append(item)
-                else:
-                    matches.append(line.strip())
-   
     photo_urls = names_and_photos(matches)  
+
 
     return render_template('seed-info-page.html', seed=seed_type.capitalize(), matches = photo_urls, companies=list_of_companies())
 
 @app.route('/pdf-viewer')
 def pdf_viewer():
     variety = request.args.get('variety').title() 
-    filename = get_photo_filename(variety)
-    photo_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/icons/{filename}"
+    isQR = request.args.get('QR_chosen')
+
+    filename = get_photo_filename(variety,isQR=isQR)
+    folder = "seed_imgs"
+
+    if isQR:
+        folder = "seed_qrs"
+    photo_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{folder}/{filename}"
 
     company = request.args.get('company')
     date = request.args.get('month') + " " +  request.args.get("year")
@@ -142,11 +150,13 @@ def confirm_entry_page():
 def give_feedback():
     return render_template('give-feedback.html')
 
-@app.route('/confirm-feedback')
+@app.route('/confirm-feedback', methods=["POST"])
 def confirm_feedback():
-    feedback = request.args.get('feedback')
-    save_feedback(feedback)
-    return render_template('confirm-feedback.html')
+    feedback = request.form.get('feedback')
+    response = save_feedback(feedback)
+    if response is ClientError:
+        return Exception
+    return "all good!"
 
 if __name__ == '__main__':
     app.run(host = "0.0.0.0", port = 8000)
