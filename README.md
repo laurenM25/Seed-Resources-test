@@ -8,7 +8,7 @@ My website is a flask application hosted by Render. Please allow the website to 
 ## The Data Base
 
 ### Initial seed options
-All images, QR codes and seed names are stored in an AWS S3 bucket (as image or text files) managed by myself, and are retrieved from the bucket to be displayed on the website. Over 1,000 seed varieties from the seed company Johnny's Seeds have already been uploaded to the S3 bucket as I obtained information on the company's many seed varieties via webscraping with BeautifulSoup and commenced a batch upload. The file "batchUpload.py" contains the code for this process.
+All images, QR codes and seed names are stored in an AWS S3 bucket (as image or text files) managed by myself, and are retrieved from the bucket to be displayed on the website. Over 1,000 seed varieties from the seed company Johnny's Seeds have already been uploaded to the S3 bucket as I obtained information on the company's many seed varieties via webscraping with BeautifulSoup and commenced a batch upload. The files "scraping.py" and "bulkUpload.py" contains the code for this process.
 
 ### User input
 Users may add a seed to the database via a form on the website. They must input the seed's generic variety (e.g. basil), specific variety (e.g. red rubin), seed company (default is Johnny's Seeds), image file and optionally a link to the seed's information page. The backend will retrieve these inputs and upload the image file with its according name (file naming proceduring described below) to the S3 bucket, as well as create a QR code if a link was provided using python's qrcode library and uploading it as well. The seed name will be added to master list of seed varieties stored as a txt file in the S3 bucket.
